@@ -14,7 +14,10 @@ function main()
 % 1 = Hamilton
 % 2 = Madison
 
-% We want to convert the labels to: 1 = Hamilton, 2 = Madison
+% We want to convert the labels to: 1 = Hamilton, -1 = Madison
+
+% Get M and H (parameters for QP Algorithms)
+[M, H] = getMH(train);
 
 end
 
