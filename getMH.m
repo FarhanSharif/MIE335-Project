@@ -18,11 +18,11 @@ for ii = 1 : size(train, 1)
    
    if currentRow(1) == 1
        % Put data from 2,: in H
-       H = [H; currentRow(2,:)];
+       H = [H; currentRow(2:size(currentRow,2))];
        
    elseif currentRow(1) == 2
        % Put data from 2,: in M
-       M = [M; currentRow(2,:)];
+       M = [M; currentRow(2:size(currentRow,2))];
        
    end
     

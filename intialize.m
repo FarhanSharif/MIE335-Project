@@ -16,8 +16,10 @@ function [Q, c, A, b, LB, UB] = intialize(M, H, mu)
 % in project description)
 % Dimension of b is 1
 
+HDim = size(H, 1);
+MDim = size(M, 1);
 wDim = size(M, 2); % Hardcode to reduce time?
-sDim = size(H, 1) + size(M, 1);
+sDim = HDim + MDim;
 
 totalDim = wDim + sDim + 1; % Total # of decision variables?
 
@@ -34,9 +36,18 @@ for ii = wDim+1 : wDim + sDim
 end
 
 % Construct b
-b = ones(sDim, 1);
+b = -ones(sDim, 1);
 
 % Construct A
+A = [-H; M];
+A = [A -eye(sDim)];
+A = [A [-ones(HDim,1); ones(MDim,1)]];
+
+% Construct LB
+LB = [-Inf(wDim, 1); zeros(sDim, 1); -inf];
+
+% Construct UB
+UB = Inf(wDim + sDim + 1, 1);
 
 end
 
