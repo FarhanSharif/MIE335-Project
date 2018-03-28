@@ -40,18 +40,18 @@ ctntemp=ctn;
 %until we get our desired numbers
 while(temp<=0) 
     %entering basis
-B=[B(:,1:temppos) Ntemp(:,temppos) B(:,temppos+1:size(B,2))];
-B(:, temppos)=[];
+B=[B(:,1:temp2pos) Ntemp(:,temppos) B(:,temp2pos+1:size(B,2))];
+B(:, temp2pos)=[];
 %leaving basis
-N=[N(:,1:temp2pos) Btemp(:,temp2pos) N(:,temp2pos+1:size(N,2))];
-N(:, temp2pos)=[];
+N=[N(:,1:temppos) Btemp(:,temp2pos) N(:,temppos+1:size(N,2))];
+N(:, temppos)=[];
 A=[N B];
 %entering basis
-ctb=[ctb(:,1:temppos) ctntemp(:,temppos) ctb(:,temppos+1:size(ctb,2))];
-ctb(:, temppos)=[];
+ctb=[ctb(:,1:temp2pos) ctntemp(:,temppos) ctb(:,temp2pos+1:size(ctb,2))];
+ctb(:, temp2pos)=[];
 %leaving basis
-ctn=[ctn(:,1:temp2pos) ctbtemp(:,temp2pos) ctn(:,temp2pos+1:size(ctn,2))];
-ctn(:, temp2pos)=[];
+ctn=[ctn(:,1:temppos) ctbtemp(:,temp2pos) ctn(:,temppos+1:size(ctn,2))];
+ctn(:, temppos)=[];
 ct=[ctn ctb];
 %^^^^^^this shit works up to this point ^^^^^^
 enter=ctb*(B\N)-ctn;
@@ -82,3 +82,14 @@ xb=B\b;
 z=ctb*xb;
 
 end
+
+
+
+
+
+
+
+
+
+
+
