@@ -3,32 +3,51 @@ function [x, x_positions, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
 num_rows = size(A, 1); % # of constraints = # rows in A
 num_cols = size(A, 2); % Initial # of columns in A (initial # of variables)
 
+% The last number in x_dim = # slack variables
+num_slacks = x_dim(length(x_dim)); 
+
+% Number of nonslacks = total # of columns (# of "x" variables) - # slacks
+num_nonslacks = num_cols - num_slacks;
+
+% Extract portion of A that only corresponds to slack variables
+A_slacks = A(:, (num_cols - num_slacks + 1 : num_cols));
+
+% Summing each row of A_slacks allows us to quicker determine which rows
+% have a slack with coefficient 1 (so we can swap that slack variable into 
+% the basis), or coefficient -1 or 0 (so we can add artificial variables).
+slack_coeffs_per_row = sum(A_slacks, 2);
+
 x_positions = [1 : num_cols]'; % x_positions keep track of variables' indices
 c = zeros(num_cols, 1); % c keeps track of z coefficients (current no a's)
 
 for ii = 1 : num_rows 
     
-    % Temporarily hold current position of x and c
+    % Takes position of x and c out of basis
     temp = x_positions(ii);
     temp_c = c(ii);
     
-    if A(ii, x_dim + ii) == 1
+    if slack_coeffs_per_row(ii) == 1
         
-        % Swap positions of x and s, and corresponding c (put in basis)
-        x_positions(ii) = x_positions(x_dim + ii);
-        c(ii) = c(x_dim + ii);
+        % Find position (col) of slack variable with respect to A_slacks
+        % (NOT A) so the correct position of that slack variable is found
+        s_col = find(A_slacks(ii,:) == 1);
         
-        % Complete swapping (put x and corresponding c in nonbasis)
-        x_positions(x_dim + ii) = temp;
-        c(x_dim + ii) = temp_c;
+        % Puts position of slack (in x) and c in basis
+        x_positions(ii) = x_positions(num_nonslacks + s_col);
+        c(ii) = c(num_nonslacks + s_col);
+        
+        % Put position of x and c (that was taken out of basis) in nonbasis
+        x_positions(num_nonslacks + s_col) = temp;
+        c(num_nonslacks + s_col) = temp_c;
         
     else
         
-        % Swap positions with newly added position (artificial variable)
+        % Put newly added position and c (of artificial variable) in basis
         x_positions(ii) = length(x_positions) + 1;
         c(ii) = 1; % Artificial variable has coefficient = 1 in objective
         
-        % Increase x and c with newly added artificial variable
+        % Append position of x and c (that was taken out of basis) at the
+        % end (thus, putting in nonbasis)
         x_positions = [x_positions; temp];
         c = [c; temp_c];
         
@@ -42,17 +61,17 @@ end
 
 num_cols = size(A, 2); % # of columns will change after adding a's
 
-% Makes B based on basic variables positions 
+% Make B based on basic variables positions (# basic vars = # rows)
 for ii = 1 : num_rows
     B(:, ii) = A(:, x_positions(ii)); 
 end
 
-% Makes N based on nonbasic variables positions    
+% Make N based on nonbasic vars positions (# nonbasic vars = #cols - #rows)
 for ii = num_rows+1 : num_cols
     N(:, ii-num_rows) = A(:, x_positions(ii)); 
 end
 
-% # rows = # basic variables, top num_rows of c corresponds to basic variables
+% #rows = #basic variables, top num_rows of c corresponds to basic vars
 cB = c(1 : num_rows); 
 
 % Rest of rows after num_rows of c corresponds to nonbasic variables
@@ -64,3 +83,13 @@ x = [b; zeros(num_cols - num_rows, 1)];
 
 end
 
+function position = get_slack_position(slack_row)
+
+    position = 0;
+    for ii = 1 : length(slack_row)
+        if slack_row(ii) == 1
+            position = ii;
+        end
+    end
+    
+end
