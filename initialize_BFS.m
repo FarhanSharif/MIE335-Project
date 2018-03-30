@@ -33,7 +33,7 @@ for ii = 1 : num_rows
         c = [c; temp_c];
         
         % Increase A with column for newly added artificial variable
-        a_col = zeros(ii, 1);
+        a_col = zeros(num_rows, 1);
         a_col(ii) = 1;
         A = [A a_col];
         
@@ -49,7 +49,7 @@ end
 
 % Makes N based on nonbasic variables positions    
 for ii = num_rows+1 : num_cols
-    N(:, ii) = A(:, x_positions(ii)); 
+    N(:, ii-num_rows) = A(:, x_positions(ii)); 
 end
 
 % # rows = # basic variables, top num_rows of c corresponds to basic variables
