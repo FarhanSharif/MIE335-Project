@@ -1,4 +1,4 @@
-function [x,y,z,time]=simulatedannealing()
+function [x,y,z,time]=directionalsearch()
 loopcounter=0;
 scalardeltaf=inf;
 eps=0.00001;
