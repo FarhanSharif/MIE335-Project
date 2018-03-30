@@ -1,5 +1,8 @@
 function [x, x_positions, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
 
+% If any RHS is -ve, make positive (multiply that row of A and b by -1)
+[A, b] = make_RHS_positive(A, b);
+
 num_rows = size(A, 1); % # of constraints = # rows in A
 num_cols = size(A, 2); % Initial # of columns in A (initial # of variables)
 
@@ -81,6 +84,17 @@ cN = c(num_rows+1 : num_cols);
 % nonbasic (so = 0);
 x = [b; zeros(num_cols - num_rows, 1)];
 
+end
+
+function [A, b] = make_RHS_positive(A, b)
+    
+    for ii = 1 : length(b) 
+        if b(ii) < 0
+            A(ii,:) = -A(ii,:);
+            b(ii) = -b(ii);
+        end
+    end
+    
 end
 
 function position = get_slack_position(slack_row)
