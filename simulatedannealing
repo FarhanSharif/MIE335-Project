@@ -1,4 +1,4 @@
-function [newcost,newsol]=simulatedannealing(w,b)
+function [oldcost,sol]=simulatedannealing(w,b)
 %http://katrinaeg.com/simulated-annealing.html
 
 sol=[w,b,max(0,1-y(w'*x+b))];
