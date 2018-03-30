@@ -1,4 +1,4 @@
-function x = revised_simplex(x, cB, cN, B, N)
+function x = revised_simplex(x, x_positions, cB, cN, B, N)
 
 num_basic = size(B, 2); % # of basic variables
 num_nonbasic = size(N, 2); % # of nonbasic variables
@@ -35,6 +35,10 @@ while value < 0
     x(exit_index) = x(num_basic + enter_index);
     x(num_basic + enter_index) = temp;
     
+    temp = x_positions(exit_index);
+    x_positions(exit_index) = x_positions(num_basic + enter_index);
+    x_positions(num_basic + enter_index) = temp;
+    
     % Swap exiting and entering variable columns in B and N matrices
     temp = B(:, exit_index);
     B(:, exit_index) = N(:, enter_index);
@@ -51,6 +55,22 @@ while value < 0
     
 end
 
+x = reorder_x(x, x_positions);
+
+
+end
+
+function x_final = reorder_x(x, x_positions) 
+
+num_vars = length(x); % Length of x = Number of variables
+
+x_final = zeros(num_vars, 1);
+
+% For each variable, put in correct position according to x_positions (was
+% originally ordered from 1 in intialize_BFS.m)
+for ii = 1 : num_vars
+    x_final(x_positions(ii)) = x(ii);
+end
 
 end
 

@@ -1,4 +1,4 @@
-function [x, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
+function [x, x_positions, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
 
 num_rows = size(A, 1); % # of constraints = # rows in A
 num_cols = size(A, 2); % Initial # of columns in A (initial # of variables)
