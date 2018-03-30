@@ -1,8 +1,7 @@
-function [x,y,z,time]=simulatedannealing()
+function [x,y,z,time]=simulatedannealing(w,b)
 %http://katrinaeg.com/simulated-annealing.html
 tic
-%an example of a test solution we shove into the thing 
-sol=[0;0;0];
+sol=[w,b,max(1-y(w'*x+b))];
 oldcost=cost(sol); 
 T=1.0;
 Tmin=0.00001;
