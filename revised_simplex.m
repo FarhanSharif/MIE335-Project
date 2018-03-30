@@ -1,10 +1,10 @@
-function x = revised_simplex(x, cBT, cN, B, N)
+function x = revised_simplex(x, cB, cN, B, N)
 
 num_basic = size(B, 2); % # of basic variables
 num_nonbasic = size(N, 2); % # of nonbasic variables
 
 % Optimality check
-r = cN - ((cBT * (B^-1))*N)';
+r = cN - ((cB' * (B^-1))*N)';
 [value, enter_index] = min(r);
 
 % If negative value exists, then continue until no more negative values
@@ -21,6 +21,7 @@ while value < 0
     ratios = (-x) ./ d;
     
     % To find min positive ratio, convert all nonpositive ratios to inf
+    % Found notation here: https://www.mathworks.com/matlabcentral/answers/133523-find-minimum-value-greater-than-zero-in-the-rows
     ratios(ratios <= 0) = inf; 
     
     % Find min ratio (a) & corresponding index in basic matrix (exit_index)
@@ -40,12 +41,12 @@ while value < 0
     N(:, enter_index) = temp;
     
     % Swap exiting and entering variable positions in cB and cN matrices
-    temp = cBT(exit_index);
-    cBT(exit_index) = cN(enter_index);
+    temp = cB(exit_index);
+    cB(exit_index) = cN(enter_index);
     cN(enter_index) = temp;
     
     % Optimality Test
-    r = cN - ((cBT * (B^-1))*N)';
+    r = cN - ((cB' * (B^-1))*N)';
     [value, enter_index] = min(r);
     
 end

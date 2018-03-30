@@ -1,4 +1,4 @@
-function [x, cBT, cN, B, N] = initialize_BFS(A, b, x_dim)
+function [x, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
 
 num_rows = size(A, 1); % # of constraints = # rows in A
 num_cols = size(A, 2); % Initial # of columns in A (initial # of variables)
@@ -53,7 +53,7 @@ for ii = num_rows+1 : num_cols
 end
 
 % # rows = # basic variables, top num_rows of c corresponds to basic variables
-cBT = c(1 : num_rows); 
+cB = c(1 : num_rows); 
 
 % Rest of rows after num_rows of c corresponds to nonbasic variables
 cN = c(num_rows+1 : num_cols); 
