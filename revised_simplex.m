@@ -45,7 +45,7 @@ while value < 0
     cN(enter_index) = temp;
     
     % Optimality Test
-    r = cN - ((cBT * (B^-1))*N);
+    r = cN - ((cBT * (B^-1))*N)';
     [value, enter_index] = min(r);
     
 end
