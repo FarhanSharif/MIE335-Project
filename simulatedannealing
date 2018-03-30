@@ -1,10 +1,9 @@
 function [x,y,z,time]=simulatedannealing()
 %http://katrinaeg.com/simulated-annealing.html
 tic
-syms x y
-f=0.5*x^2+3*x*y+5*y^2-x-2*y;
-f=matlabFunction(f);
-oldcost=f(x,y);
+%an example of a test solution we shove into the thing 
+sol=[0;0;0];
+oldcost=cost(sol); 
 T=1.0;
 Tmin=0.00001;
 alpha=0.9;
@@ -13,7 +12,7 @@ while(T>T_min)
     for i=1:100
         %i have no idea how to find the neighbour
         newsol=neighbour(f);
-        newcost=f(newsol(1),newsol(2));
+        newcost=cost(newsol);
         ap=exp(1)^((newcost-oldcost)/T);
         if  ap>rand()
             sol=newsol;
@@ -27,4 +26,10 @@ end
 function X=neighbour(f)
 
 
+end
+function thecost=cost(variablevalues)
+
+%the coefficients of the objective. This never changes
+c=[1 3 5];
+thecost=c*variablevalues;
 end
