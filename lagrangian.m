@@ -25,12 +25,20 @@ function [Aeq, beq, x_dim] = lagrangian(G, g, A, b)
 % beq = [-g; -b; 0]
 % x would be [x; lam; mu; t], x_dim = [length of each part of beq]
 
-L_matrix = [G -A' -eye(size(G,1),size(G,1)) zeros(size(G,1),size(A,1)+size(G,1))]; 
-F_matrix = [-A zeros(size(A,1),size(A,1)+size(G,1)) eye(size(A,1),size(A,1)) zeros(size(A,1),size(G,1))];
-x_nonneg_A = [eye(size(G,1),size(G,1)) zeros(size(G,1),size(G,1)+size(A,1)) zeros(size(G,1),size(A,1)) -eye(size(G,1),size(G,1))];
+%w/o x >= 0 cons
+%w/ x >= 0 cons
 
-Aeq = [L_matrix; F_matrix; x_nonneg_A];
-beq = [-g; -b; zeros(size(G,1),1)];
-x_dim = [length(g) length(b) size(G,1) length(b)+size(G,1)];
+L_matrix = [G -A' -eye(size(G,1),size(G,1)) zeros(size(G,1),size(A,1))]; 
+F_matrix = [-A zeros(size(A,1),size(A,1)+size(G,1)) eye(size(A,1),size(A,1))];
+Aeq = [L_matrix; F_matrix];
+beq = [-g; -b];
+x_dim = [length(g) length(b) size(G,1) length(b)];
+
+%L_matrix = [G -A' -eye(size(G,1),size(G,1)) zeros(size(G,1),size(A,1)+size(G,1))]; 
+%F_matrix = [-A zeros(size(A,1),size(A,1)+size(G,1)) eye(size(A,1),size(A,1)) zeros(size(A,1),size(G,1))];
+%x_nonneg_A = [eye(size(G,1),size(G,1)) zeros(size(G,1),size(G,1)+size(A,1)) zeros(size(G,1),size(A,1)) -eye(size(G,1),size(G,1))];
+%Aeq = [L_matrix; F_matrix; x_nonneg_A];
+%beq = [-g; -b; zeros(size(G,1),1)];
+%x_dim = [length(g) length(b) size(G,1) length(b)+size(G,1)];
 
 end
