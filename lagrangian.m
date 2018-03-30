@@ -1,4 +1,4 @@
-function [Aeq, beq] = lagrangian(G, g, A, b)
+function [Aeq, beq, x_dim] = lagrangian(G, g, A, b)
 
 % general QP -> KKT conditions
 % formulation from IPM.pdf, note that their "A" is A^T
@@ -20,10 +20,10 @@ function [Aeq, beq] = lagrangian(G, g, A, b)
 % C is lam*t = 0 for all constraints
 
 % returned: (leave out C cons, enforce manually)
-% add (lam,t) for x >= 0 cons
+% add (mu,t) for x >= 0 cons
 % Aeq = [L; F; x_nonneg_A] = [G -A^T 0; -A 0 I; I 0 -I]
 % beq = [-g; -b; 0]
-% x would be [x; lam; t]
+% x would be [x; lam; mu; t], x_dim = [length of each part of beq]
 
 L_matrix = [G -A' -eye(size(G,1),size(G,1)) zeros(size(G,1),size(A,1)+size(G,1))]; 
 F_matrix = [-A zeros(size(A,1),size(A,1)+size(G,1)) eye(size(A,1),size(A,1)) zeros(size(A,1),size(G,1))];
@@ -31,5 +31,6 @@ x_nonneg_A = [eye(size(G,1),size(G,1)) zeros(size(G,1),size(G,1)+size(A,1)) zero
 
 Aeq = [L_matrix; F_matrix; x_nonneg_A];
 beq = [-g; -b; zeros(size(G,1),1)];
+x_dim = [length(g) length(b) size(G,1) length(b)+size(G,1)];
 
 end
