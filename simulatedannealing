@@ -11,7 +11,7 @@ while(T>T_min)
     i=1;
     for i=1:100
         %i have no idea how to find the neighbour
-        newsol=neighbour(f);
+        newsol=neighbour(sol);
         newcost=cost(newsol);
         ap=exp(1)^((newcost-oldcost)/T);
         if  ap>rand()
