@@ -1,0 +1,30 @@
+function [x,y,z,time]=simulatedannealing()
+%http://katrinaeg.com/simulated-annealing.html
+tic
+syms x y
+f=0.5*x^2+3*x*y+5*y^2-x-2*y;
+f=matlabFunction(f);
+oldcost=f(x,y);
+T=1.0;
+Tmin=0.00001;
+alpha=0.9;
+while(T>T_min)
+    i=1;
+    for i=1:100
+        %i have no idea how to find the neighbour
+        newsol=neighbour(f);
+        newcost=f(newsol(1),newsol(2));
+        ap=exp(1)^((newcost-oldcost)/T);
+        if  ap>rand()
+            sol=newsol;
+            oldcost=newcost;
+        end
+    end
+    T=alpha*T;
+end
+end
+
+function X=neighbour(f)
+
+
+end
