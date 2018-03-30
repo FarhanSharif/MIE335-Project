@@ -1,4 +1,4 @@
-function [x,y,z,time]=simulatedannealing(w,b)
+function [newcost,newsol]=simulatedannealing(w,b)
 %http://katrinaeg.com/simulated-annealing.html
 
 sol=[w,b,max(0,1-y(w'*x+b))];
@@ -6,8 +6,8 @@ oldcost=cost(sol);
 T=1.0;
 Tmin=0.00001;
 alpha=0.9;
-while(T>T_min)
-    i=1;
+while(T>Tmin)
+   
     for i=1:100
         %i have no idea how to find the neighbour
         newsol=neighbour(sol);
