@@ -1,4 +1,4 @@
-function x = revised_simplex(x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N)
+function [x_values, lambda_values, mu_values, slack_values] = revised_simplex(x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N, x_dim)
 
 num_basic = size(B, 2); % # of basic variables
 num_nonbasic = size(N, 2); % # of nonbasic variables
@@ -35,8 +35,8 @@ while value < 0
     % Calculate d (needed to find min ratio)
     d = [((-(B^-1)) * N(:, enter_index)); e];
     
-    % Calculate ratios
-    ratios = (-x) ./ d;
+    % Calculate ratios (only for basic variables)
+    ratios = (-x(1:num_basic)) ./ (d(1:num_basic));
     
     % To find min positive ratio, convert all nonpositive ratios to inf
     % Found notation here: https://www.mathworks.com/matlabcentral/answers/133523-find-minimum-value-greater-than-zero-in-the-rows
@@ -101,6 +101,26 @@ end
 
 x = reorder_x(x, x_positions);
 
+[x_values, lambda_values, mu_values, slack_values] = partition_x(x, x_dim);
+
+end
+
+function [x_values, lambda_values, mu_values, slack_values] = partition_x(x, x_dim) 
+
+num_x = x_dim(1);
+num_lambda = x_dim(2);
+num_mu = x_dim(3);
+num_slacks = x_dim(4);
+
+x_range = 1 : num_x;
+lambda_range = num_x + 1 : num_x + num_lambda;
+mu_range = num_x + num_lambda + 1 : num_x + num_lambda + num_mu;
+slack_range = num_x + num_lambda + num_mu + 1 : num_x + num_lambda + num_mu + num_slacks;
+
+x_values = x(x_range);
+lambda_values = x(lambda_range);
+mu_values = x(mu_range);
+slack_values = x(slack_range);
 
 end
 
