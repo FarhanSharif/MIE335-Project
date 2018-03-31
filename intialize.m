@@ -30,7 +30,7 @@ for ii = 1 : wDim
 end
 
 % Construct c
-c = zeros(1, totalDim);
+c = zeros(totalDim, 1);
 for ii = wDim+1 : wDim + sDim
    c(ii) = 1/sDim; 
 end
