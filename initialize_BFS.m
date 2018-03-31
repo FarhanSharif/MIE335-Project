@@ -1,53 +1,38 @@
-function [x, x_positions, complementary_positions, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
+function [x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
 
 % If any RHS is -ve, make positive (multiply that row of A and b by -1)
 [A, b] = make_RHS_positive(A, b);
 
-num_rows = size(A, 1); % # of constraints = # rows in A
+num_rows = size(A, 1); % # of constraints = # rows in A = # basic vars
 num_cols = size(A, 2); % Initial # of columns in A (initial # of variables)
-
-% The last number in x_dim = # slack variables
-num_slacks = x_dim(length(x_dim)); 
-
-% Number of nonslacks = total # of columns (# of "x" variables) - # slacks
-num_nonslacks = num_cols - num_slacks;
-
-% Extract portion of A that only corresponds to slack variables
-A_slacks = A(:, (num_cols - num_slacks + 1 : num_cols));
-
-% Summing each row of A_slacks allows us to quicker determine which rows
-% have a slack with coefficient 1 (so we can swap that slack variable into 
-% the basis), or coefficient -1 or 0 (so we can add artificial variables).
-slack_coeffs_per_row = sum(A_slacks, 2);
 
 x_positions = [1 : num_cols]'; % x_positions keep track of variables' indices
 c = zeros(num_cols, 1); % c keeps track of z coefficients (current no a's)
 
-for ii = 1 : num_rows 
+% "Dictionary" keeps track of whether variables are in basis (1) or not (0)
+% Initially, fills first x_rows with 1's because first x_rows variables are
+% by default set to be in basis, and the rest are filled wiht 0's
+basis_lookup = [ones(num_rows, 1); zeros(num_cols - num_rows, 1)]
+
+num_x = x_dim(1); % Number of "x" vars (which are NOT lambda, mu, slack)
+
+% For the first num_x # constraints, check if RHS = 0
+% If RHS = 0, then the corresponding "x" variable for that constraint stays
+% in the basis and is assigned value of RHS (0) by default
+for ii = 1 : num_x
     
-    % Takes position of x and c out of basis
-    temp = x_positions(ii);
-    temp_c = c(ii);
-    
-    if slack_coeffs_per_row(ii) == 1
+    % If RHS is not zero, add an artifical variable for that constraint
+    if b(ii) ~= 0
         
-        % Find position (col) of slack variable with respect to A_slacks
-        % (NOT A) so the correct position of that slack variable is found
-        s_col = find(A_slacks(ii,:) == 1);
-        
-        % Puts position of slack (in x) and c in basis
-        x_positions(ii) = x_positions(num_nonslacks + s_col);
-        c(ii) = c(num_nonslacks + s_col);
-        
-        % Put position of x and c (that was taken out of basis) in nonbasis
-        x_positions(num_nonslacks + s_col) = temp;
-        c(num_nonslacks + s_col) = temp_c;
-        
-    else
+        % Takes position of x and c out of basis
+        temp = x_positions(ii);
+        temp_c = c(ii);
+        basis_lookup(temp) = 0;
         
         % Put newly added position and c (of artificial variable) in basis
         x_positions(ii) = length(x_positions) + 1;
         c(ii) = 1; % Artificial variable has coefficient = 1 in objective
+        basis_lookup = [basis_lookup; 1]; 
         
         % Append position of x and c (that was taken out of basis) at the
         % end (thus, putting in nonbasis)
@@ -60,6 +45,61 @@ for ii = 1 : num_rows
         A = [A a_col];
         
     end
+    
+end
+
+num_lambda = x_dim(2); % # of lambda variables
+num_mu = x_dim(3); % # of mu variables
+num_slacks = x_dim(4); % The last number in x_dim = # slack variables
+
+% For the remaining constraints, check if slack coefficients = 1
+% If slack coefficient = 1, then that corresponding slack variable position
+% is swapped with the current variable's position in the basis
+for ii = num_x + 1 : num_rows
+    
+    % Column of current slack variable with respect to A
+    slack_col = num_lambda + num_mu + ii; 
+    
+    if A(ii, slack_col) == 1
+        
+        % Takes position of x and c out of basis
+        temp = x_positions(ii);
+        temp_c = c(ii);
+        basis_lookup(temp) = 0;
+        
+        % Puts position of slack (in x) and c in basis
+        x_positions(ii) = x_positions(slack_col);
+        c(ii) = c(slack_col);
+        basis_lookup(x_positions(ii)) = 1;
+        
+        % Put position of x and c (that was taken out of basis) in nonbasis
+        x_positions(slack_col) = temp;
+        c(slack_col) = temp_c;
+        
+    else
+        
+        % Takes position of x and c out of basis
+        temp = x_positions(ii);
+        temp_c = c(ii);
+        basis_lookup(temp) = 0;
+        
+        % Put newly added position and c (of artificial variable) in basis
+        x_positions(ii) = length(x_positions) + 1;
+        c(ii) = 1; % Artificial variable has coefficient = 1 in objective
+        basis_lookup = [basis_lookup; 1]; 
+        
+        % Append position of x and c (that was taken out of basis) at the
+        % end (thus, putting in nonbasis)
+        x_positions = [x_positions; temp];
+        c = [c; temp_c];
+        
+        % Increase A with column for newly added artificial variable
+        a_col = zeros(num_rows, 1);
+        a_col(ii) = 1;
+        A = [A a_col];
+        
+    end
+    
 end
 
 num_cols = size(A, 2); % # of columns will change after adding a's
@@ -92,10 +132,10 @@ x = [b; zeros(num_cols - num_rows, 1)];
 % lambda, mu, and then slack), another sorted list can be made, partitioned
 % according to x, lambda, mu, and slack, and then the complementary
 % sections can be swapped, mapping complementary variables.
-x_range = 1 : x_dim(1);
-lambda_range = x_dim(1)+1 : x_dim(1)+x_dim(2);
-mu_range = x_dim(1)+x_dim(2)+1 : x_dim(1)+x_dim(2)+x_dim(3);
-slack_range = x_dim(1)+x_dim(2)+x_dim(3)+1 : x_dim(1)+x_dim(2)+x_dim(3)+x_dim(4);
+x_range = 1 : num_x;
+lambda_range = num_x+1 : num_x+num_lambda;
+mu_range = num_x+num_lambda+1 : num_x+x_num_lambda+num_mu;
+slack_range = num_x+num_lambda+num_mu+1 : num_x+num_lambda+num_mu+num_slacks;
 
 % Artificial variables will have no complements, so pad their
 % "complementary_positions" with zeros
@@ -113,17 +153,6 @@ function [A, b] = make_RHS_positive(A, b)
         if b(ii) < 0
             A(ii,:) = -A(ii,:);
             b(ii) = -b(ii);
-        end
-    end
-    
-end
-
-function position = get_slack_position(slack_row)
-
-    position = 0;
-    for ii = 1 : length(slack_row)
-        if slack_row(ii) == 1
-            position = ii;
         end
     end
     
