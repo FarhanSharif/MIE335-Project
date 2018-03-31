@@ -1,4 +1,4 @@
-function x = revised_simplex(x, x_positions, complementary_positions, cB, cN, B, N)
+function x = revised_simplex(x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N)
 
 num_basic = size(B, 2); % # of basic variables
 num_nonbasic = size(N, 2); % # of nonbasic variables
@@ -12,9 +12,9 @@ candidate_position = x_positions(num_basic + enter_index);
 complement_position = complementary_positions(candidate_position);
 
 % If basic complement is not 0 (artificial vars have no complement)
-% AND a complement exists, assigns new min (candidate) 
+% AND a basic complement exists, assigns new min (candidate) 
 % until one that doesnt have a basic complement is found
-while complement_position ~= 0 && isComplementBasic(x_positions(1:num_basic), complement_position) ~= 0
+while complement_position ~= 0 && basis_lookup(complement_position) == 1
     
     r(enter_index) = inf; % Make the candidate inf, so new min can be found
     [value, enter_index] = min(r); % Returns index at *first* min occurence
@@ -48,14 +48,19 @@ while value < 0
     % Update x
     x = x + (a * d);
     
-    % Swap variables so that basic variables are at the top
+    % Swap variable RHS so that basic variables are at the top
     temp = x(exit_index);
     x(exit_index) = x(num_basic + enter_index);
     x(num_basic + enter_index) = temp;
     
-    temp = x_positions(exit_index);
+    % Correct basis lookup "dictionary" (exiting now = 0, entering now = 1)
+    basis_lookup(x_positions(exit_index)) = 0; 
+    basis_lookup(x_positions(num_basic + enter_index)) = 1; 
+
+    % Swap corresponding variable positions to keep track 
+    temp = x_positions(exit_index);    
     x_positions(exit_index) = x_positions(num_basic + enter_index);
-    x_positions(num_basic + enter_index) = temp;
+    x_positions(num_basic + enter_index) = temp;    
     
     % Swap exiting and entering variable columns in B and N matrices
     temp = B(:, exit_index);
@@ -81,7 +86,7 @@ while value < 0
 
     % If basic complement exists, assigns new min (candidate) 
     % until one that doesnt have a basic complement is found
-    while complement_position ~= 0 && isComplementBasic(x_positions(1:num_basic), complement_position) ~= 0
+    while complement_position ~= 0 && basis_lookup(complement_position) == 1
 
         r(enter_index) = inf; % Make the candidate inf, so new min can be found
         [value, enter_index] = min(r); % Returns index at *first* min occurence
