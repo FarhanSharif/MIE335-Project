@@ -26,7 +26,7 @@ totalDim = wDim + sDim + 1; % Total # of decision variables?
 % Construct Q
 Q = zeros(totalDim);
 for ii = 1 : wDim 
-   Q(ii) = mu; 
+   Q(ii, ii) = mu; 
 end
 
 % Construct c
