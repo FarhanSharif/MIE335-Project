@@ -11,7 +11,7 @@ function [z, w, b] = SA(M, H, mu, x_0, T_0, alpha, N, P)
 % return final values for z, w, b
 % see "Simulated Annealing.docx" for notes
 
-z_0 = feval(obj_eval, M, H, mu, x_0(1:end-1), x_0(end));
+z_0 = feval('obj_eval', M, H, mu, x_0(1:end-1), x_0(end));
 x_opt = x_0;
 z_opt = z_0;
 
@@ -27,7 +27,7 @@ for k = 0:N
         u_cand = rand(x_dim,1);
         u_cand = u_cand/norm(u_cand);
         x_cand = x_curr + T_curr*u_cand;
-        z_cand = feval(obj_eval, M, H, mu, x_cand(1:end-1), x_cand(end));
+        z_cand = feval('obj_eval', M, H, mu, x_cand(1:end-1), x_cand(end));
         
         if z_cand < z_curr
             x_curr = x_cand;
