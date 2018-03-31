@@ -1,4 +1,4 @@
-function [x, x_positions, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
+function [x, x_positions, complementary_positions, cB, cN, B, N] = initialize_BFS(A, b, x_dim)
 
 % If any RHS is -ve, make positive (multiply that row of A and b by -1)
 [A, b] = make_RHS_positive(A, b);
@@ -83,6 +83,27 @@ cN = c(num_rows+1 : num_cols);
 % First num_rows of x will be basic (so = b); rest of the rows will be
 % nonbasic (so = 0);
 x = [b; zeros(num_cols - num_rows, 1)];
+
+% Make complementary positions corresponding to each variable:
+% x positions will be complementary for mu positions and vice versa,
+% lamda positions will be complementary for slack positions and vice versa.
+% Since x was initially a sorted list from 1 to # of variables in A (before
+% being swapped around), and using the advantagous order of x_dim (i.e. x,
+% lambda, mu, and then slack), another sorted list can be made, partitioned
+% according to x, lambda, mu, and slack, and then the complementary
+% sections can be swapped, mapping complementary variables.
+x_range = 1 : x_dim(1);
+lambda_range = x_dim(1)+1 : x_dim(1)+x_dim(2);
+mu_range = x_dim(1)+x_dim(2)+1 : x_dim(1)+x_dim(2)+x_dim(3);
+slack_range = x_dim(1)+x_dim(2)+x_dim(3)+1 : x_dim(1)+x_dim(2)+x_dim(3)+x_dim(4);
+
+% Artificial variables will have no complements, so pad their
+% "complementary_positions" with zeros
+artificial_range = zeros(1, num_cols - sum(x_dim));
+
+% This "dictionary" of complentary_positions will make it quicker to check
+% if a variable's complement is in the basis when doing revised simplex.
+complementary_positions = [mu_range slack_range x_range lambda_range artificial_range];
 
 end
 

@@ -1,4 +1,4 @@
-function x = revised_simplex(x, x_positions, cB, cN, B, N)
+function x = revised_simplex(x, x_positions, complementary_positions, cB, cN, B, N)
 
 num_basic = size(B, 2); % # of basic variables
 num_nonbasic = size(N, 2); % # of nonbasic variables
@@ -6,6 +6,24 @@ num_nonbasic = size(N, 2); % # of nonbasic variables
 % Optimality check
 r = cN - ((cB' * (B^-1))*N)';
 [value, enter_index] = min(r);
+
+% Check if entering candidate has complementary in basis
+candidate_position = x_positions(num_basic + enter_index);
+complement_position = complementary_positions(candidate_position);
+
+% If basic complement is not 0 (artificial vars have no complement)
+% AND a complement exists, assigns new min (candidate) 
+% until one that doesnt have a basic complement is found
+while complement_position ~= 0 && isComplementBasic(x_positions(1:num_basic), complement_position) ~= 0
+    
+    r(enter_index) = inf; % Make the candidate inf, so new min can be found
+    [value, enter_index] = min(r); % Returns index at *first* min occurence
+    
+    % Check if new entering candidate has a basic complement
+    candidate_position = x_positions(num_basic + enter_index);
+    complement_position = complementary_positions(candidate_position);
+    
+end
 
 % If negative value exists, then continue until no more negative values
 while value < 0
@@ -53,6 +71,27 @@ while value < 0
     r = cN - ((cB' * (B^-1))*N)';
     [value, enter_index] = min(r);
     
+    if value >= 0 % If min >= 0, optimal solution found, break out of loop
+        break;
+    end
+    
+    % Check if entering candidate has complementary in basis
+    candidate_position = x_positions(num_basic + enter_index);
+    complement_position = complementary_positions(candidate_position);
+
+    % If basic complement exists, assigns new min (candidate) 
+    % until one that doesnt have a basic complement is found
+    while complement_position ~= 0 && isComplementBasic(x_positions(1:num_basic), complement_position) ~= 0
+
+        r(enter_index) = inf; % Make the candidate inf, so new min can be found
+        [value, enter_index] = min(r); % Returns index at *first* min occurence
+
+        % Check if new entering candidate has a basic complement
+        candidate_position = x_positions(num_basic + enter_index);
+        complement_position = complementary_positions(candidate_position);
+
+    end
+    
 end
 
 x = reorder_x(x, x_positions);
@@ -70,6 +109,20 @@ x_final = zeros(num_vars, 1);
 % originally ordered from 1 in intialize_BFS.m)
 for ii = 1 : num_vars
     x_final(x_positions(ii)) = x(ii);
+end
+
+end
+
+function doesExist = isComplementBasic(basic_positions, complement_position)
+
+doesExist = 0;
+
+% Checks if complement_position is in basic_positions (does is exist?)
+for ii = 1 : length(basic_positions)
+    if basic_positions(ii) == complement_position
+        doesExist = 1;
+        break;
+    end
 end
 
 end
