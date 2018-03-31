@@ -9,11 +9,6 @@ num_cols = size(A, 2); % Initial # of columns in A (initial # of variables)
 x_positions = [1 : num_cols]'; % x_positions keep track of variables' indices
 c = zeros(num_cols, 1); % c keeps track of z coefficients (current no a's)
 
-% "Dictionary" keeps track of whether variables are in basis (1) or not (0)
-% Initially, fills first x_rows with 1's because first x_rows variables are
-% by default set to be in basis, and the rest are filled wiht 0's
-basis_lookup = [ones(num_rows, 1); zeros(num_cols - num_rows, 1)]
-
 num_x = x_dim(1); % Number of "x" vars (which are NOT lambda, mu, slack)
 
 % For the first num_x # constraints, check if RHS = 0
@@ -27,12 +22,10 @@ for ii = 1 : num_x
         % Takes position of x and c out of basis
         temp = x_positions(ii);
         temp_c = c(ii);
-        basis_lookup(temp) = 0;
         
         % Put newly added position and c (of artificial variable) in basis
         x_positions(ii) = length(x_positions) + 1;
         c(ii) = 1; % Artificial variable has coefficient = 1 in objective
-        basis_lookup = [basis_lookup; 1]; 
         
         % Append position of x and c (that was taken out of basis) at the
         % end (thus, putting in nonbasis)
@@ -65,12 +58,10 @@ for ii = num_x + 1 : num_rows
         % Takes position of x and c out of basis
         temp = x_positions(ii);
         temp_c = c(ii);
-        basis_lookup(temp) = 0;
         
         % Puts position of slack (in x) and c in basis
         x_positions(ii) = x_positions(slack_col);
         c(ii) = c(slack_col);
-        basis_lookup(x_positions(ii)) = 1;
         
         % Put position of x and c (that was taken out of basis) in nonbasis
         x_positions(slack_col) = temp;
@@ -81,12 +72,10 @@ for ii = num_x + 1 : num_rows
         % Takes position of x and c out of basis
         temp = x_positions(ii);
         temp_c = c(ii);
-        basis_lookup(temp) = 0;
         
         % Put newly added position and c (of artificial variable) in basis
         x_positions(ii) = length(x_positions) + 1;
         c(ii) = 1; % Artificial variable has coefficient = 1 in objective
-        basis_lookup = [basis_lookup; 1]; 
         
         % Append position of x and c (that was taken out of basis) at the
         % end (thus, putting in nonbasis)
@@ -103,6 +92,10 @@ for ii = num_x + 1 : num_rows
 end
 
 num_cols = size(A, 2); % # of columns will change after adding a's
+
+% Initialize B and N with 0's
+B = zeros(num_rows, num_rows);
+N = zeros(num_rows, num_cols - num_rows);
 
 % Make B based on basic variables positions (# basic vars = # rows)
 for ii = 1 : num_rows
@@ -133,9 +126,9 @@ x = [b; zeros(num_cols - num_rows, 1)];
 % according to x, lambda, mu, and slack, and then the complementary
 % sections can be swapped, mapping complementary variables.
 x_range = 1 : num_x;
-lambda_range = num_x+1 : num_x+num_lambda;
-mu_range = num_x+num_lambda+1 : num_x+x_num_lambda+num_mu;
-slack_range = num_x+num_lambda+num_mu+1 : num_x+num_lambda+num_mu+num_slacks;
+lambda_range = num_x + 1 : num_x + num_lambda;
+mu_range = num_x + num_lambda + 1 : num_x + num_lambda + num_mu;
+slack_range = num_x + num_lambda + num_mu + 1 : num_x + num_lambda + num_mu + num_slacks;
 
 % Artificial variables will have no complements, so pad their
 % "complementary_positions" with zeros
@@ -144,6 +137,12 @@ artificial_range = zeros(1, num_cols - sum(x_dim));
 % This "dictionary" of complentary_positions will make it quicker to check
 % if a variable's complement is in the basis when doing revised simplex.
 complementary_positions = [mu_range slack_range x_range lambda_range artificial_range];
+
+% This "dictionary" keeps track of whether variables are in basis (1) or not (0)
+basis_lookup = zeros(num_cols, 1); % Initialize 0 for all variables
+for ii = 1 : num_rows
+    basis_lookup(x_positions(ii)) = 1; % Assign 1 for variables in basis
+end
 
 end
 
