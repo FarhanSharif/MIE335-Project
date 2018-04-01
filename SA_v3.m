@@ -1,4 +1,4 @@
-function [z, w, b, s] = SA(M, H, mu, x_0, T_0, alpha, N, P)
+function [z, w, b, s] = SA_v3(M, H, mu, x_0, T_0, alpha, N, P)
 
 % M, H, mu needed to build objective function z for SVM
 % M, H contain the feature vector for 1 paper in each row
@@ -25,10 +25,15 @@ for k = 0:N
     for jj = 0:P
         % generate random neighbour, defined as x(k+1) = x(k) + T(k)*u
         % direction is uniform(-1,1) random unit vector, step size is T(k)
-        u_cand = (rand(x_dim,1)*2)-1;
+        % v2: try generating w_cand, then solve for best b_cand
+        
+        u_cand = (rand(x_dim-1,1)*2)-1;
         u_cand = u_cand/norm(u_cand);
-        x_cand = x_curr + T_curr*u_cand;
-        [z_cand, s_cand] = feval('obj_eval', M, H, mu, x_cand(1:end-1), x_cand(end));
+        w_cand = x_curr(1:end-1) + T_curr*u_cand;
+        
+        [b_cand, s_cand, z_b] = solve_b(w_cand, M, H);
+        x_cand = [w_cand; b_cand];
+        z_cand = z_b + (mu/2)*(w_cand'*w_cand);
         
         if z_cand < z_curr
             x_curr = x_cand;

@@ -1,4 +1,4 @@
-function z = obj_eval(M, H, mu, w, b)
+function [z, s] = obj_eval(M, H, mu, w, b)
 
 % evaluates the SVM objective value given inputs
 % M, H contain the feature vector for 1 paper in each row

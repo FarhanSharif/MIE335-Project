@@ -1,4 +1,4 @@
-function [z, w, b, s] = SA(M, H, mu, x_0, T_0, alpha, N, P)
+function [z, w, b, s, b_o] = SA_v4(M, H, mu, x_0, T_0, alpha, N, P)
 
 % M, H, mu needed to build objective function z for SVM
 % M, H contain the feature vector for 1 paper in each row
@@ -55,5 +55,6 @@ z = z_opt;
 w = x_opt(1:end-1);
 b = x_opt(end);
 s = s_opt;
+b_o = solve_b(w, M, H);
 
 end

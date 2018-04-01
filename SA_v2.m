@@ -1,4 +1,4 @@
-function [z, w, b, s] = SA(M, H, mu, x_0, T_0, alpha, N, P)
+function [z, w, b, s] = SA_v2(M, H, mu, x_0, T_0, alpha, N, P, R)
 
 % M, H, mu needed to build objective function z for SVM
 % M, H contain the feature vector for 1 paper in each row
@@ -25,26 +25,34 @@ for k = 0:N
     for jj = 0:P
         % generate random neighbour, defined as x(k+1) = x(k) + T(k)*u
         % direction is uniform(-1,1) random unit vector, step size is T(k)
-        u_cand = (rand(x_dim,1)*2)-1;
+        % v2: try generating w_cand, then try for best b_cand
+        u_cand = (rand(x_dim-1,1)*2)-1;
         u_cand = u_cand/norm(u_cand);
-        x_cand = x_curr + T_curr*u_cand;
-        [z_cand, s_cand] = feval('obj_eval', M, H, mu, x_cand(1:end-1), x_cand(end));
+        w_cand = x_curr(1:end-1) + T_curr*u_cand;
         
-        if z_cand < z_curr
-            x_curr = x_cand;
-            z_curr = z_cand;
-            if z_cand < z_opt
-                x_opt = x_cand;
-                z_opt = z_cand;
-                s_opt = s_cand;
-            end
-        else
-            % probability of moving to a worse point to possibly escape
-            % reaching a local instead of global minimum
-            escape_prob = exp((z_curr-z_cand)/T_curr);
-            if rand < escape_prob
+        for ii = 1:R
+            u_cand = (rand*(2/(x_dim-1)))-(1/(x_dim-1));
+            b_cand = x_curr(end) + u_cand*T_curr;
+            x_cand = [w_cand; b_cand];
+        
+            [z_cand, s_cand] = feval('obj_eval', M, H, mu, x_cand(1:end-1), x_cand(end));
+
+            if z_cand < z_curr
                 x_curr = x_cand;
                 z_curr = z_cand;
+                if z_cand < z_opt
+                    x_opt = x_cand;
+                    z_opt = z_cand;
+                    s_opt = s_cand;
+                end
+            else
+                % probability of moving to a worse point to possibly escape
+                % reaching a local instead of global minimum
+                escape_prob = exp((z_curr-z_cand)/T_curr);
+                if rand < escape_prob
+                    x_curr = x_cand;
+                    z_curr = z_cand;
+                end
             end
         end
     end
