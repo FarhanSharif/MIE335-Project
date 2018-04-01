@@ -94,9 +94,9 @@ for ii = 1 : num_rows
     basis_lookup(vars_in_basis(ii)) = 1; % Assign 1 for variables in basis
 end
 
-z_row = [zeros(1, sum(x_dim)) -ones(1, num_cols - sum(x_dim)) 0];
+bottom_row = [zeros(1, sum(x_dim)) -ones(1, num_cols - sum(x_dim)) 0];
 
-tableau = [[A b]; z_row];
+tableau = [[A b]; bottom_row];
 
 end
 
