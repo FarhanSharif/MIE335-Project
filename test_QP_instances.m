@@ -22,8 +22,10 @@ b = UB;
 % stored as time_simplex
 tic
 [Aeq, beq, x_dim] = lagrangian(Q, f, -A, -b);
-[x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N] = initialize_BFS(Aeq, beq, x_dim);
-[x_simplex, lambda_simplex, mu_simplex, slack_simplex] = revised_simplex(x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N, x_dim);
+%[x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N] = initialize_BFS(Aeq, beq, x_dim);
+%[x_simplex, lambda_simplex, mu_simplex, slack_simplex] = revised_simplex(x, x_positions, complementary_positions, basis_lookup, cB, cN, B, N, x_dim);
+[tableau, vars_in_basis, complementary_positions, basis_lookup] = find_IBFS_regular_simplex(Aeq, beq, x_dim);
+[x_simplex, lambda_simplex, mu_simplex, slack_simplex] = simplex(tableau, vars_in_basis, complementary_positions, basis_lookup, x_dim);
 time_simplex = toc;
 
 % Put x_quadprog and x_simplex side by side for comparison
