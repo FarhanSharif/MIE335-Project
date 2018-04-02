@@ -1,14 +1,10 @@
-function [z,b,w,p1,p2] = run_quadprog(M,H,mu)
+function [z,b,w,p1,p2] = run_SA_Q3(M,H,mu)
+
+    % for Q3, not as many iters needed -> R = 1
 
     dataRow = size(M,1) + size(H,1);
     dataCol = size(M, 2);
-    [Q, c, A, b, LB, UB] = intialize(M, H, mu);
-    [X, z] = quadprog(Q, c, A, b, [], [], LB, UB, [], optimoptions('quadprog','Display', 'off'));
-    % X has form [w; s; b]
-    w = X(1:dataCol);
-    s = X(dataCol+1 : dataCol+dataRow);
-    b = X(end);
-    
+    [z, w, b, s] = SA_recursive(M, H, mu, zeros(dataCol+1, 1), 1, 0.95, 200, 1000, 1);
     p1 = sum(s > 0.000001);
     
     % find p2 = # misclassified points from tune
