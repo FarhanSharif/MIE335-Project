@@ -4,10 +4,10 @@ function [x_values, lambda_values, mu_values, slack_values] = simplex(tableau, v
 % for all basic vars that are not slack (either "x" or "a", because slacks 
 % are by default "identity")
 
-% Reduce for all basic "x" vars (first x_dim(1) columns)
-for ii = 1 : x_dim(1)
-   if basis_lookup(ii) == 1
-       tableau = row_reduce(tableau, ii, ii);
+% Reduce for all basic "mu" or "x" vars 
+for ii = 1 : x_dim(3) % # mu's = x_dim(3) = # x's = x_dim(1)
+   if basis_lookup(vars_in_basis(ii)) == 1
+       tableau = row_reduce(tableau, ii, vars_in_basis(ii));
    end
 end
 
